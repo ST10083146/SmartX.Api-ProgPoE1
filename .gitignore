@@ -1,0 +1,17 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# Uploaded files (keep the folder, ignore contents)
+SmartX.Api/wwwroot/uploads/*
+!SmartX.Api/wwwroot/uploads/.gitkeep
+
+# OS / editor
+.DS_Store
+.vscode/
