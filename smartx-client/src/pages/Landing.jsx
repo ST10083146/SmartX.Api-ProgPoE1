@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 
 const ROUTES = {
-  ingestion: '/ingestion'
+  ingestion: '/ingestion',
+  commands: '/commands'
 };
 
 export default function Landing() {
