@@ -1,47 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { createTelemetryConnection } from '../api/client.js';
-
-const MAX_FEED_ITEMS = 40;
+import React from 'react';
+import { useTelemetry } from '../context/TelemetryContext.jsx';
 
 /**
- * This is the "dynamic engagement feature" from the brief: instead of a
- * static progress bar, sensor readings stream in live over SignalR and
- * render as a scrolling feed, with out-of-range readings picked out in red
- * and surfaced again as a toast — so a developer watching the dashboard
- * can spot a spike or a dropped sensor the moment it happens, not after
- * refreshing a page.
+ * Part 1's dynamic engagement feature (live feed + anomaly toast).
+ * In Part 2 it reads from the shared TelemetryContext instead of opening its own connection,
+ * so the feed is still there when you come back from another page.
  */
 export default function LiveTelemetryFeed() {
-  const [items, setItems] = useState([]);
-  const [alert, setAlert] = useState(null);
-  const [aggregate, setAggregate] = useState(null);
-  const [connected, setConnected] = useState(false);
-  const alertTimer = useRef(null);
-
-  useEffect(() => {
-    const connection = createTelemetryConnection();
-
-    connection.on('telemetryTick', (tick) => {
-      setItems((prev) => [tick, ...prev].slice(0, MAX_FEED_ITEMS));
-    });
-
-    connection.on('anomalyAlert', (payload) => {
-      setAlert(payload);
-      clearTimeout(alertTimer.current);
-      alertTimer.current = setTimeout(() => setAlert(null), 4000);
-    });
-
-    connection.on('meterAggregate', (payload) => setAggregate(payload));
-
-    connection.start()
-      .then(() => setConnected(true))
-      .catch(() => setConnected(false));
-
-    return () => {
-      clearTimeout(alertTimer.current);
-      connection.stop();
-    };
-  }, []);
+  const { feed, aggregate, connected } = useTelemetry();
 
   return (
     <div>
@@ -53,16 +19,18 @@ export default function LiveTelemetryFeed() {
       </div>
 
       <div className="feed" style={{ marginTop: '1rem' }}>
-        {items.length === 0 && <p className="hint-text">Waiting for telemetry… register a sensor to start seeding data.</p>}
-        {items.map((tick, i) => (
+        {feed.length === 0 && <p className="hint-text">Waiting for telemetry… register a sensor to start the simulated devices.</p>}
+        {feed.map((tick, i) => (
           <div key={`${tick.sensorId}-${tick.timestamp}-${i}`} className={`feed-item ${tick.anomalous ? 'anomalous' : ''}`}>
-            <span>{tick.nodeId} · {tick.category}</span>
+            <span>
+              {tick.nodeId} · {tick.category}
+              {tick.lane === 'priority' && <span className="lane-tag">priority</span>}
+            </span>
             <span>{Number(tick.value).toFixed(1)}{tick.unit}</span>
           </div>
         ))}
       </div>
 
-      {alert && <div className="alert-toast">⚠ {alert.message}</div>}
     </div>
   );
 }
