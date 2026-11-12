@@ -51,6 +51,9 @@ public class ActionPatternEngine
     private readonly Dictionary<string, Dictionary<string, int>> _followers =
         new Dictionary<string, Dictionary<string, int>>();
 
+    // Alerts whose history was filled in with the "Load demo history" button, so the screen can say so honestly.
+    private readonly HashSet<string> _demoSeededAlertKeys = new HashSet<string>();
+
     private string? _lastAlertKey;
     private DateTimeOffset _lastAlertTime;
     private readonly HashSet<string> _actionsSinceLastAlert = new HashSet<string>();
@@ -297,11 +300,114 @@ public class ActionPatternEngine
         return (n * sumXY - sumX * sumY) / denominator;
     }
 
+    /// <summary>
+    /// Everything the engine has learned so far, even before it is ready to suggest anything.
+    /// Shown on the dashboard so the learning is visible: "after an alert on X, you did Y, N times".
+    /// A pattern becomes "ready" (it can produce a Suggested Action) once it has been seen twice.
+    /// </summary>
+    public List<LearnedPattern> GetLearnedPatterns()
+    {
+        var patterns = new List<LearnedPattern>();
+
+        lock (_lock)
+        {
+            foreach (var alert in _followers)
+            {
+                var mac = alert.Key.Substring("alert|".Length);
+                _devices.TryGet(mac, out var alertDevice);
+                var trigger = "Alert on " + (alertDevice != null ? alertDevice.NodeId : mac);
+
+                foreach (var action in alert.Value)
+                {
+                    var description = DescribeAction(action.Key);
+                    if (description == null) continue;
+
+                    patterns.Add(new LearnedPattern(
+                        trigger,
+                        description,
+                        action.Value,
+                        action.Value >= MinimumRepeats,
+                        _demoSeededAlertKeys.Contains(alert.Key)));
+                }
+            }
+        }
+
+        return patterns.OrderByDescending(p => p.TimesDone).ToList();
+    }
+
+    /// <summary>
+    /// Fills in some past history so the predictive engine can be shown straight away, instead of
+    /// the operator having to repeat an alert and a reaction twice by hand. It records 2 earlier alerts on the
+    /// first moisture sensor, each followed by turning the first pump ON. It is labelled as demo data on screen.
+    /// </summary>
+    public (bool Ok, string Message) SeedDemoHistory()
+    {
+        var devices = _devices.GetAll();
+        var sensor = devices.FirstOrDefault(d => d.Category == "Environmental");
+        var pump = devices.FirstOrDefault(d => d.Category == "Actuator");
+
+        if (sensor == null || pump == null)
+        {
+            return (false, "Register at least one moisture sensor and one pump first (run the seed script).");
+        }
+
+        var alertKey = "alert|" + sensor.Mac;
+        var actionKey = "cmd|" + pump.Mac + "|on";
+
+        lock (_lock)
+        {
+            if (!_demoSeededAlertKeys.Add(alertKey))
+            {
+                return (false, "The demo history is already loaded.");
+            }
+
+            const int rounds = 2;
+
+            _alertCounts.TryGetValue(alertKey, out var alerts);
+            _alertCounts[alertKey] = alerts + rounds;
+
+            if (!_followers.TryGetValue(alertKey, out var counts))
+            {
+                counts = new Dictionary<string, int>();
+                _followers[alertKey] = counts;
+            }
+            counts.TryGetValue(actionKey, out var done);
+            counts[actionKey] = done + rounds;
+        }
+
+        return (true, "Demo history loaded: " + sensor.NodeId + " had 2 earlier alerts, each followed by turning " +
+                      pump.NodeId + " ON. Now click Simulate spike on " + sensor.NodeId + " to see the suggestion.");
+    }
+
+    // Turns an action key such as "cmd|AA:BB:..|on" into text for the screen.
+    private string? DescribeAction(string actionKey)
+    {
+        var parts = actionKey.Split('|');
+
+        if (parts[0] == "cmd" && parts.Length == 3)
+        {
+            var verb = parts[2] == "on" ? " ON" : " OFF";
+            if (parts[1] == "ALL") return "Shut down all actuators";
+            return _devices.TryGet(parts[1], out var target) && target != null ? "Turn " + target.NodeId + verb : null;
+        }
+
+        if (parts[0] == "search" && parts.Length >= 2)
+        {
+            return "Search for \"" + parts[1] + "\"";
+        }
+
+        return null;
+    }
+
     private Suggestion? BuildSuggestion(string alertMac, string actionKey, int timesDone, int occurrences, double confidence)
     {
         _devices.TryGet(alertMac, out var alertDevice);
         var alertName = alertDevice != null ? alertDevice.NodeId : alertMac;
         var reason = "After an alert on " + alertName + ", you did this " + timesDone + " of " + occurrences + " times.";
+        if (_demoSeededAlertKeys.Contains("alert|" + alertMac))
+        {
+            reason += " (includes loaded demo history)";
+        }
 
         var parts = actionKey.Split('|');
 
