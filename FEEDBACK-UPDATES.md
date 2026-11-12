@@ -1,32 +1,32 @@
 # Updates Made from Lecturer Feedback (Parts 1 and 2)
 
 This file lists the changes I made to the Smart-X project because of the feedback I received on Part 1 and Part 2.
-Each row links one piece of feedback to the change that answers it and to where that change lives in the code.
+Each row links one piece of feedback to the change that answers it and to where that change lives in the project.
 
 <!--
-HOW TO FILL THIS IN (delete this comment before submitting):
-1. Open your marked Part 1 and Part 2 rubrics and copy each piece of feedback into the first column (quote it or paraphrase it).
-2. In the second column say what you changed. Be specific and only list changes you really made.
-3. In the third column give the files and, if you can, the commit message. Run `git log --oneline` to find the commit.
-4. If a piece of feedback was not acted on, say so and why. An honest "not changed, because..." is better than a made-up change.
-5. The rows marked EXAMPLE below only show the layout. Delete them.
+BEFORE SUBMITTING (delete this comment):
+1. Every [ADD ...] marker below must be replaced or the row removed. Do not leave any marker in the submitted file.
+2. The video rows are only true once the video is recorded and uploaded. Add the link, or delete those sentences.
+3. For the rows where no code was changed, only keep the sentence "I re-tested ..." if you ran those README tests yourself.
+4. Paste the Part 1 feedback in the Part 1 table.
 -->
+
+## Part 2 feedback (total score 42 / 100)
+
+| # | Criterion and mark | Feedback received | Update made | Where |
+|---|---|---|---|---|
+| 1 | Main Menu Navigation and Active Pillar State: 8 / 30 | "No video demo provided" | I recorded a demo video that walks through the navigation between all three pillars and shows that the live feed and device list are kept when changing pages: [ADD YOUTUBE LINK]. The Network Topology pillar is now active, so the menu has all three working pillars. README Test 18 explains how to check that state is kept. | `NavBar.jsx`, `Landing.jsx`, `App.jsx`, `context/TelemetryContext.jsx`; README section 7 (Test 18) |
+| 2 | Predictive Action and Suggestion Engine: 8 / 30 | "No video provided to see this." | The engine only showed a suggestion after an alert and the same reaction had been repeated twice, so someone without a video could never see it. I added a **What the engine has learned** list that shows every pattern the engine has recorded and whether it is ready to suggest. I also added a **Load demo history** button that fills in two earlier alerts so a suggestion can be shown in seconds. It is labelled as demo data on screen and in the suggestion text. The engine is also shown in the video: [ADD YOUTUBE LINK]. | `Services/ActionPatternEngine.cs` (`GetLearnedPatterns`, `SeedDemoHistory`), `Endpoints/TelemetryEndpoints.cs` (`GET /api/patterns`, `POST /api/patterns/demo`), `SuggestionsPanel.jsx`, `CommandStream.jsx`; README Test 8 |
+| 3 | Advanced Collections: Stacks and Queues: 10 / 15 | No written comment. The band text names two possible faults: high-priority alerts not bypassing the standard stream, and the stack undo crashing. | No code change. I re-tested both named behaviours using README Tests 2 and 5. Critical readings go through the priority lane and are processed before the normal queue, and Undo and Shut down all reverse commands without errors. Both are shown in the video: [ADD YOUTUBE LINK]. | `Services/TelemetryQueues.cs`, `Services/CommandService.cs`; README Tests 2 and 5 |
+| 4 | Lookup Structures: Dictionaries and Key-Value Maps: 10 / 15 | No written comment. The band text names two possible faults: poor keys causing collisions, and timelines not sorting correctly. | No code change. I re-tested lookup by MAC address and the sorted history using README Tests 3 and 6. The MAC address is the dictionary key, and the history is returned in time order. | `Services/DeviceRegistry.cs`, `Services/TelemetryLog.cs`; README Tests 3 and 6 |
+| 5 | Unique Collections: Sets: 6 / 10 | No written comment. The band text names two possible faults: sets used incorrectly, and duplicate warnings leaking through to the interface. | No code change. I re-tested duplicate handling using README Test 4. Sending the same critical reading twice produces one fault and one alert, and an unplugged device is reported once. | `Services/FaultTracker.cs`; README Test 4 |
+| 6 | GitHub manual deduction | Not scored (no deduction). | None needed. | |
 
 ## Part 1 feedback
 
-| # | Feedback received | Update made | Where (files / commits) |
-|---|---|---|---|
-| 1 | *EXAMPLE: "Referencing was incomplete."* | *EXAMPLE: Added IIE Harvard references to the README and a source comment at the top of each file.* | *EXAMPLE: README.md, Services/*.cs* |
-| 2 | [paste feedback] | [what you changed] | [files / commit] |
-| 3 | [paste feedback] | [what you changed] | [files / commit] |
-
-## Part 2 feedback
-
-| # | Feedback received | Update made | Where (files / commits) |
-|---|---|---|---|
-| 1 | [paste feedback] | [what you changed] | [files / commit] |
-| 2 | [paste feedback] | [what you changed] | [files / commit] |
-| 3 | [paste feedback] | [what you changed] | [files / commit] |
+| # | Criterion and mark | Feedback received | Update made | Where |
+|---|---|---|---|---|
+| 1 | [ADD CRITERION AND MARK] | [ADD THE PART 1 FEEDBACK TEXT] | [ADD WHAT YOU CHANGED] | [ADD FILES] |
 
 ## Other improvements made in Part 3 (not from feedback)
 
