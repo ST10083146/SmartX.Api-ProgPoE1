@@ -93,6 +93,18 @@ public static class TelemetryEndpoints
             return Results.Ok(list);
         });
 
+        // What the predictive engine has learned so far (visible even before it can suggest anything).
+        app.MapGet("/api/patterns", (ActionPatternEngine patterns) => Results.Ok(patterns.GetLearnedPatterns()));
+
+        // Loads labelled demo history so the engine can be shown straight away.
+        app.MapPost("/api/patterns/demo", (ActionPatternEngine patterns) =>
+        {
+            var result = patterns.SeedDemoHistory();
+            return result.Ok
+                ? Results.Ok(new { message = result.Message })
+                : Results.BadRequest(new { error = result.Message });
+        });
+
         app.MapGet("/api/suggestions", (ActionPatternEngine patterns) =>
             Results.Ok(new { suggestions = patterns.GetSuggestions(), insights = patterns.GetInsights() }));
     }
