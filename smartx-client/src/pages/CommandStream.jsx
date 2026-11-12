@@ -22,6 +22,7 @@ export default function CommandStream() {
   const [selectedMac, setSelectedMac] = useState(null);
   const [notice, setNotice] = useState(null);
   const [suggestionData, setSuggestionData] = useState(null);
+  const [patterns, setPatterns] = useState([]);
   const [commands, setCommands] = useState([]);
 
   // Ask the API which devices match the filters. Only a pressed "Search" is logged (log = true).
@@ -39,6 +40,7 @@ export default function CommandStream() {
 
   const refreshSide = useCallback(() => {
     api.getSuggestions().then(setSuggestionData).catch(() => {});
+    api.getPatterns().then(setPatterns).catch(() => {});
     api.getCommandHistory().then(setCommands).catch(() => {});
   }, []);
 
@@ -143,7 +145,12 @@ export default function CommandStream() {
         <div className="cs-side">
           <div className="panel">
             <h2>Predictive Engine</h2>
-            <SuggestionsPanel data={suggestionData} onApply={applySuggestion} />
+            <SuggestionsPanel
+              data={suggestionData}
+              patterns={patterns}
+              onApply={applySuggestion}
+              onSeedDemo={() => run(() => api.seedDemoPatterns())}
+            />
           </div>
 
           <div className="panel">
