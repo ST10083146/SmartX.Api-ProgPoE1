@@ -49,3 +49,5 @@ public record CommandRequest(string MacAddress, string Action);
 public record Suggestion(string Kind, string Title, string Reason, double Confidence, string? Mac, bool? TurnOn);
 
 public record Insight(string Level, string Message, string? Mac);
+
+public record LearnedPattern(string Trigger, string Action, int TimesDone, bool Ready, bool IsDemo);
