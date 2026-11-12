@@ -624,6 +624,11 @@ The engine learns "after an alert on device X, the operator usually does Y". It 
 2. Click **Turn ON** on `pump-a` (the moisture recovers a few seconds later and the fault clears).
 3. Click **Undo last** to turn the pump back off.
 
+**Shortcut:** press **Load demo history** in the Predictive Engine panel. It fills in two earlier alerts on the first
+moisture sensor, each followed by turning the first pump ON, and says so on screen ("includes demo history"). Then click
+**Simulate spike** on that moisture sensor and the suggestion appears straight away. The **What the engine has learned**
+list shows every pattern it has recorded, and whether it has been seen enough times (twice) to be suggested.
+
 On the third spike, the **Predictive Engine** panel shows under **Suggested Actions**:
 *Turn pump-a ON — After an alert on moisture-sensor-a, you did this 2 of 2 times.* with an **Apply** button.
 **Automated Insights** also flags devices with an active fault, and devices that had three or more out-of-range
