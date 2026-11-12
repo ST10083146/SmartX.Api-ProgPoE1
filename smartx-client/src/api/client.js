@@ -45,6 +45,8 @@ export const api = {
   getFaults: () => fetch(`${API_BASE}/api/faults`).then(handle),
   getQueueStats: () => fetch(`${API_BASE}/api/queues/stats`).then(handle),
   getSuggestions: () => fetch(`${API_BASE}/api/suggestions`).then(handle),
+  getPatterns: () => fetch(`${API_BASE}/api/patterns`).then(handle),
+  seedDemoPatterns: () => json('POST', '/api/patterns/demo'),
   getCommandHistory: () => fetch(`${API_BASE}/api/commands/history`).then(handle),
 
   sendCommand: (macAddress, action) => json('POST', '/api/commands', { macAddress, action }),
